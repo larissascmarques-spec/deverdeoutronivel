@@ -1151,3 +1151,12 @@ main:focus {
   line-height: 1.7;
   margin-top: 10px;
 }
+
+.ai-settings { max-width: 680px; margin-inline: auto; }
+.ai-settings a { text-decoration: underline; text-underline-offset: 3px; }
+.ai-steps { padding-left: 1.5rem; line-height: 1.65; }
+.ai-steps li + li { margin-top: .8rem; }
+.ai-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+.ai-consent { display:flex; gap:.75rem; align-items:flex-start; line-height:1.5; }
+.ai-consent input { min-width:22px; min-height:22px; }
+.ai-settings button { min-height:48px; }

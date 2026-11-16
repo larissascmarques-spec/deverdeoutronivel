@@ -1,51 +1,34 @@
-import { readAIConfig, verifyProviderConnection } from "./openai.ts";
 
-const APP_ORIGIN = "https://dever-outro-nivel-previa.larissa7288.chatgpt.site";
-const headers = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": APP_ORIGIN,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Cache-Control": "no-store",
-  "Vary": "Origin",
-};
-function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), {status,headers}); }
-Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response(null, {status:204,headers});
-  if (!["GET","POST"].includes(req.method)) return json({code:"METHOD_NOT_ALLOWED"},405);
-  const origin = req.headers.get("origin");
-  if (origin && origin !== APP_ORIGIN) return json({code:"ORIGIN_NOT_ALLOWED"},403);
-  const authorization = req.headers.get("authorization");
-  if (!authorization?.startsWith("Bearer ")) return json({code:"SIGN_IN_REQUIRED"},401);
-  const url = Deno.env.get("SUPABASE_URL");
-  let anonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  try { anonKey = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}").default ?? anonKey; } catch { /* Keep the server-provided fallback. */ }
-  if (!url || !anonKey) return json({code:"BACKEND_NOT_CONFIGURED"},503);
-  try {
-    const userResponse = await fetch(url + "/auth/v1/user", {
-      headers:{Authorization:authorization,apikey:anonKey}, signal:AbortSignal.timeout(10000),
-    });
-    if (!userResponse.ok) return json({code:"SIGN_IN_REQUIRED"},401);
-    const user = await userResponse.json();
-    // app_metadata is server-managed; user_metadata must never grant this access.
-    if (!user.id || user.app_metadata?.dever_admin !== true) return json({code:"ADMIN_REQUIRED"},403);
-    const config = readAIConfig();
-    const declaredBudget = Number(Deno.env.get("DON_APPROVED_BUDGET_USD"));
-    const setupReady = Boolean(config) && Number.isFinite(declaredBudget) && declaredBudget > 0;
-    if (req.method === "GET") return json({
-      provider_configured:Boolean(config), budget_declared:Number.isFinite(declaredBudget) && declaredBudget>0,
-      generation_enabled:false,
-      status:setupReady?"ready_to_verify":"setup_required",
-      message:"Este endpoint verifica a conexão. Não gera nem aprova atividades.",
-    });
-    const body = await req.json().catch(() => null);
-    if (body?.action !== "check_connection") return json({code:"INVALID_ACTION"},400);
-    if (!setupReady || !config) return json({code:"AI_SETUP_REQUIRED",generation_enabled:false},503);
-    await verifyProviderConnection(config);
-    return json({connection_verified:true,generation_enabled:false,
-      message:"Acesso aos modelos conferido. Geração depende do fluxo de revisão, cotas e catálogo verificado."});
-  } catch {
-    // Never return credentials, request bodies, or raw provider errors.
-    return json({code:"AI_CONNECTION_CHECK_FAILED",generation_enabled:false},502);
-  }
+const origin="https://dever-outro-nivel-previa.larissa7288.chatgpt.site";
+const headers={"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"GET,POST,DELETE,OPTIONS","Cache-Control":"no-store","Content-Type":"application/json"};
+Deno.serve(async(req:Request)=>{
+ const reply=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers});
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers});
+ if(!["GET","POST","DELETE"].includes(req.method))return reply(405,{error:"Método não permitido."});
+ const url=Deno.env.get("SUPABASE_URL")!;
+ const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+ const auth=req.headers.get("Authorization");
+ if(!auth?.startsWith("Bearer "))return reply(401,{error:"Entre na sua conta para conectar a IA."});
+ try{
+ const who=await fetch(url+"/auth/v1/user",{headers:{Authorization:auth,apikey:service},signal:AbortSignal.timeout(10000)});
+ if(!who.ok)return reply(401,{error:"Sua sessão expirou. Entre novamente."});
+ const user=await who.json();if(!user.id)return reply(401,{error:"Entre novamente."});
+ const rpc=async(action:string,key?:string)=>{
+  const r=await fetch(url+"/rest/v1/rpc/don_manage_ai_connection",{method:"POST",headers:{apikey:service,Authorization:"Bearer "+service,"Content-Type":"application/json"},body:JSON.stringify({p_user_id:user.id,p_action:action,p_key:key??null}),signal:AbortSignal.timeout(10000)});
+  if(!r.ok)throw new Error("storage");return await r.json();
+ };
+ if(req.method==="GET")return reply(200,await rpc("status"));
+ if(req.method==="DELETE")return reply(200,await rpc("delete"));
+ const raw=await req.text();if(raw.length>2048)return reply(413,{error:"Solicitação muito grande."});
+ let body;try{body=JSON.parse(raw)}catch{return reply(400,{error:"Solicitação inválida."})}
+ if(!["connect","test"].includes(body.action))return reply(400,{error:"Ação inválida."});
+ let key=body.action==="test"?(await rpc("read")).key:body.key;
+ if(typeof key!=="string"||!/^sk-[A-Za-z0-9_-]{17,509}$/.test(key))return reply(400,{error:"Cole uma chave de API válida da OpenAI."});
+ const check=await fetch("https://api.openai.com/v1/models",{headers:{Authorization:"Bearer "+key},signal:AbortSignal.timeout(15000)});
+ await check.body?.cancel();
+ if(!check.ok)return reply(check.status===429?429:400,{error:check.status===401?"Chave inválida ou revogada. Crie outra na OpenAI.":check.status===429?"A OpenAI limitou as tentativas. Aguarde e tente novamente.":"Não foi possível validar. Confira as permissões da chave para listar modelos."});
+ const result=await rpc(body.action==="test"?"tested":"save",body.action==="test"?undefined:key);
+ key=null;
+ return reply(200,{...result,message:"Conexão testada. Nenhuma atividade foi gerada nem cobrada neste teste."});
+ }catch{return reply(503,{error:"Não foi possível conectar agora. Tente novamente."})}
 });

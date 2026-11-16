@@ -53,7 +53,7 @@ export function AppShell() {
               <span>Um jeito mais leve de estudar em casa.</span>
             </div>
           </NavLink>
-          <span className="school-tag">1º ao 5º ano</span>
+          <NavLink className="school-tag" to="/minha-ia">Minha IA</NavLink>
         </div>
       </header>
 
