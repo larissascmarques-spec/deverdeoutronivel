@@ -5,7 +5,6 @@ import { PAGE_COUNT_OPTIONS } from "../data/demoCatalog";
 import { getServices } from "../services";
 import { isDemoMode } from "../config/env";
 import { useDraft } from "../state/DraftContext";
-import { ApprovedReference } from "../components/visual/ApprovedReference";
 import {
   DIFFICULTY_OPTIONS,
   YEAR_LABELS,
@@ -431,37 +430,7 @@ export function MontarAtividadePage() {
             ) : null}
           </div>
         </form>
-        <aside className="builder-aside" aria-label="Seu material">
-          <div className="reference-card">
-            <div className="reference-caption">
-              <span className="eyebrow">FEITO PARA IMPRIMIR</span>
-              <span className="paper-badge">A4</span>
-            </div>
-            <h2>
-              Uma atividade que dá
-              <br />
-              vontade de fazer.
-            </h2>
-            <p>Ilustrada para a criança. Com orientação para você.</p>
-            <ApprovedReference defaultOpen />
-          </div>
-          <div className="included-card">
-            <h3>Para acompanhar com tranquilidade</h3>
-            <p>
-              <Icon name="check" size={18} /> Atividade ilustrada da criança
-            </p>
-            <p>
-              <Icon name="check" size={18} /> Guia da mãe com respostas
-              comentadas
-            </p>
-            <p>
-              <Icon name="check" size={18} /> Folha de cálculo em Matemática
-            </p>
-            <small>
-              O conteúdo e a geração serão conectados na próxima etapa.
-            </small>
-          </div>
-        </aside>
+
       </div>
     </section>
   );

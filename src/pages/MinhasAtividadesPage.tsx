@@ -15,7 +15,9 @@ function formatDate(value: string): string {
   if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
-    month: "short",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
     year: "numeric",
   }).format(date);
 }
@@ -60,7 +62,7 @@ export function MinhasAtividadesPage() {
       <p className="eyebrow">TUDO NO MESMO LUGAR</p>
       <h1 className="page-title">Minhas atividades</h1>
       <p className="lede">
-        Reencontre seus pedidos e acompanhe o que está pronto.
+        Suas atividades ficam aqui para consultar e baixar novamente.
       </p>
 
       <div className="field search-wrap" style={{ marginTop: "1.2rem" }}>
@@ -129,8 +131,9 @@ export function MinhasAtividadesPage() {
               <Link key={item.id} className="card" to={href}>
                 <strong>{item.title}</strong>
                 <p className="meta">
-                  {YEAR_LABELS[item.year]} · {item.subjectName} ·{" "}
-                  {formatDate(item.createdAt)}
+                  {YEAR_LABELS[item.year]} · {item.subjectName}
+                  <br />
+                  <time dateTime={item.createdAt}>Pedido em {formatDate(item.createdAt)}</time>
                 </p>
                 <div className="badges">
                   <span className="badge">

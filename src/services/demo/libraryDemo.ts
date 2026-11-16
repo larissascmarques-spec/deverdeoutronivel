@@ -14,6 +14,7 @@ export const libraryDemo: LibraryService = {
   async listItems(query) {
     const needle = normalize(query ?? "");
     return loadJobs()
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map(toLibraryItem)
       .filter((item) => {
         if (!needle) return true;

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ApprovedReference } from "../components/visual/ApprovedReference";
 import { A4PageFrame } from "../components/visual/A4PageFrame";
 import { ImageDialog } from "../components/ui/ImageDialog";
 import { Icon } from "../components/ui/Icon";
@@ -222,11 +221,7 @@ export function ResultadoPage() {
             </Link>
           </div>
         </div>
-        <div className="reference-card">
-          <h2>O estilo da sua atividade</h2>
-          <p>Modelo visual aprovado para as futuras gerações.</p>
-          <ApprovedReference defaultOpen />
-        </div>
+
       </div>
 
       {lightbox && page?.imageUrl ? (

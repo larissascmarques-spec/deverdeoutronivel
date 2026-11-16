@@ -33,3 +33,9 @@ A revisão técnica não substitui testes de usabilidade com mães reais. Não h
 ## Próxima etapa após aprovação
 
 Integrar o Supabase pelos contratos existentes em src/services/interfaces.ts e src/types/contracts.ts. Usar variáveis VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY apenas para configuração pública. Credenciais de IA e chaves privilegiadas ficam exclusivamente no servidor. Manter atividade, guia da mãe e folha de cálculo separados. A IA deve receber a referência visual e passar por revisão pedagógica antes de liberar os arquivos.
+
+## Ajuste solicitado após a apresentação
+
+Removidos os cartões de apresentação e a amostra do modelo das telas de montagem e resultado. O fluxo mostra apenas as escolhas e o material do pedido, com download do PDF quando disponível. A referência continua como arquivo interno para orientar a futura geração, sem exibição promocional para a mãe.
+
+Histórico: reforçada a consulta posterior com data/hora e ordenação por pedido mais recente. Persistência por conta e download do mesmo PDF, sem regeneração, registrados como requisito explícito do back-end.
