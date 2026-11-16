@@ -1,21 +1,11 @@
 # Back-end: primeira etapa
 
-Implementado no código, sem aplicação em projeto remoto:
+A estrutura foi instalada e verificada no Supabase em 16/11/2026. Estado atual e conexão em [SUPABASE_CONFIGURADO.md](SUPABASE_CONFIGURADO.md).
 
-- Estrutura de histórico por cliente, arquivos privados, páginas e gabaritos estruturados.
-- RLS por proprietária; arquivos e respostas somente após liberação.
-- Bloqueio de material incompleto e exigência de dez verificações, revisão da mesma versão e segunda passada distinta.
-- Adaptadores de leitura e URLs temporárias do Storage. Conteúdo de gabarito validado antes da apresentação.
-- Consulta Ver gabarito na interface e download separado em PDF, indisponível quando não há arquivo.
+Implementado: histórico por cliente; arquivos privados; páginas; gabaritos estruturados; RLS por proprietária; bloqueio de liberação incompleta; revisão registrada da mesma versão em segunda passada; adaptadores de leitura; consulta Ver gabarito e opção de PDF separado.
 
-Teste local com PostgreSQL embarcado (PGlite 0.3.14), com Auth/Storage simulados: validação do pedido, liberação incompleta, segunda passada, permissões, isolamento entre duas clientes e bloqueio anônimo. Isso não equivale a teste de Supabase remoto nem à revisão pedagógica de atividades reais.
+Testes: build TypeScript/Vite e testes locais de renderização, validação de gabarito e PostgreSQL embarcado. Depois da aplicação remota, teste SQL transacional confirmou isolamento entre clientes, bloqueio de respostas não revisadas e negação de alterações de status pela cliente. Não há atividades reais geradas nesta etapa.
 
-Para reproduzir: instalar @electric-sql/pglite@0.3.14 em diretório de teste e executar tests/database-security.mjs com PGLITE_MODULE apontando para seu dist/index.js. A migração foi criada pelo Supabase CLI 3.2.0.
+A migração inicial foi criada com Supabase CLI 3.2.0. O índice adicional foi aplicado pelo conector e seu SQL foi registrado em supabase/patches/dever_activity_skill_index.sql; sincronizar o histórico remoto com a CLI ao retomar o ambiente local.
 
-## Dependências antes de ativar
-
-Não foi encontrado projeto Dever de Outro Nível na conexão atual. Identificar ou criar o projeto correto antes de aplicar a migração; inspecionar tabelas, políticas e avisos de segurança nesse projeto. Nenhum banco conectado foi alterado.
-
-Depois: aplicar e testar migração no projeto correto; configurar autenticação da cliente e regras de acesso da compra; escolher e configurar o provedor de IA no servidor; implementar fila, orçamento, geração e segunda revisão; validar gabaritos e PDFs finais; testar o fluxo completo com duas contas.
-
-createRequest e retry continuam bloqueados em produção até a implementação do servidor de geração. O modo demo permanece ativo. Nenhuma chave privilegiada foi adicionada e não foi contratado serviço pago.
+Pendências: autenticação da cliente e regras de acesso da compra; provedor de IA no servidor; fila, orçamento, geração e segunda revisão; PDFs finais e teste completo com duas contas. createRequest e retry continuam bloqueados em produção até concluir o servidor. A demonstração permanece ativa.
