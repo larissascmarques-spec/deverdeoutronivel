@@ -1102,5 +1102,52 @@ main:focus {
 }
 
 /* Direct workflow: choose the material, view it and download the PDF. */
-.builder-layout, .result-layout { grid-template-columns: minmax(0, 1fr); max-width: 760px; margin-left: auto; margin-right: auto; }
-.page-heading { max-width: 760px; margin-left: auto; margin-right: auto; }
+.builder-layout,
+.result-layout {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-heading {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.answer-key-panel {
+  margin-top: 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f7fafc;
+}
+.answer-key-panel summary {
+  min-height: 52px;
+  cursor: pointer;
+  padding: 14px 18px;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--navy);
+}
+.answer-key-panel summary span {
+  float: right;
+}
+.answer-key-content {
+  padding: 0 18px 20px;
+}
+.answer-key-list {
+  padding-left: 20px;
+  display: grid;
+  gap: 24px;
+  margin-top: 20px;
+}
+.answer-key-list h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.answer-key-list p,
+.answer-key-list ol {
+  font-size: 14px;
+  line-height: 1.7;
+  margin-top: 10px;
+}

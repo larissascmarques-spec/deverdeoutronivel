@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { A4PageFrame } from "../components/visual/A4PageFrame";
+import { AnswerKeyPanel } from "../components/ui/AnswerKeyPanel";
 import { ImageDialog } from "../components/ui/ImageDialog";
 import { Icon } from "../components/ui/Icon";
 import { getServices } from "../services";
@@ -29,7 +30,9 @@ function FileButton({ file }: { file: ActivityFile }) {
         ? "Baixar atividade"
         : file.kind === "mother_guide"
           ? "Baixar guia da mãe"
-          : "Folha de cálculo"}
+          : file.kind === "answer_key"
+            ? "Baixar gabarito em PDF"
+            : "Folha de cálculo"}
     </button>
   );
 }
@@ -193,6 +196,10 @@ export function ResultadoPage() {
               </p>
             </>
           )}
+          <AnswerKeyPanel
+            answerKey={job.status === "completed" ? job.answerKey : null}
+            simulated={job.simulated}
+          />
           <div className="actions">
             {job.files
               .filter((file) => file.kind !== "calculation_sheet")
@@ -221,7 +228,6 @@ export function ResultadoPage() {
             </Link>
           </div>
         </div>
-
       </div>
 
       {lightbox && page?.imageUrl ? (

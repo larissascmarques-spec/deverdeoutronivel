@@ -79,6 +79,14 @@ export function emptyFiles(
     },
   ];
 
+  files.push({
+    id: "answer-key",
+    kind: "answer_key",
+    label: "Gabarito",
+    available: false,
+    url: null,
+  });
+
   if (subjectId === "matematica") {
     files.push({
       id: "calc",
