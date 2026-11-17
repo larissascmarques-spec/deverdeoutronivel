@@ -2,6 +2,7 @@ import {useEffect,useRef,useState,type ReactNode,type FormEvent} from 'react'
 import {isDemoMode} from '../../config/env'
 import {getSupabaseClient} from '../../lib/supabaseClient'
 import {sendAccessLink} from '../../services/emailAccess'
+import {openDirectAccess,hasDirectAccess} from '../../services/directAccess'
 
 export function AuthGate({children}:{children:ReactNode}){
  const demo=isDemoMode()
@@ -37,15 +38,16 @@ export function AuthGate({children}:{children:ReactNode}){
      if(previous!==next){setAccess('checking');try{sessionStorage.removeItem('dever-outro-nivel:draft')}catch{/* optional cache */}}
      return next
     })
-    setLoading(false)
+    if(session||!hasDirectAccess)setLoading(false)
    })
    stop=()=>data.subscription.unsubscribe()
+   await openDirectAccess(client)
    const {data:{session},error:failure}=await client.auth.getSession()
    if(!active)return
    setUserId(session?.user.id??null)
    setLoading(false)
    if(failure||callbackError){setError('Este link expirou ou já foi usado. Peça outro abaixo.');window.history.replaceState(null,'',window.location.pathname)}
-  }).catch(()=>{if(active){setError('Não foi possível conectar. Atualize a página.');setLoading(false)}})
+  }).catch((failure:unknown)=>{if(active){setError(failure instanceof Error?failure.message:'Não foi possível conectar. Atualize a página.');setLoading(false)}})
   return()=>{active=false;stop?.()}
  },[demo,callbackError])
  useEffect(()=>{
