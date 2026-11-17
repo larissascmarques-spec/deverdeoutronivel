@@ -18,7 +18,10 @@ Deno.serve(async(req:Request)=>{
   if(error)return reply(503,{error:'Não foi possível consultar o acesso. Tente novamente.'})
   if(allowed){
    const {error:sendError}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:true,emailRedirectTo:origin+'/'}})
-   if(sendError)return reply(503,{error:'O envio de e-mail está indisponível. Tente novamente em alguns minutos.'})
+   if(sendError){
+    if(sendError.status===429)return reply(429,{code:'email_rate_limit',error:'O serviço atingiu o limite de envio. Nenhum novo link foi enviado. Aguarde antes de tentar novamente.'})
+    return reply(503,{error:'O envio de e-mail está indisponível. Nenhum novo link foi confirmado.'})
+   }
   }
   return reply(200,{message:'Se este e-mail tem acesso liberado, você receberá o link. Use o mesmo e-mail da compra.'})
  }catch{return reply(503,{error:'Não foi possível enviar agora. Tente novamente.'})}

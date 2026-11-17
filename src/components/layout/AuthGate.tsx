@@ -12,7 +12,16 @@ export function AuthGate({children}:{children:ReactNode}){
  const [email,setEmail]=useState('')
  const [sentTo,setSentTo]=useState('')
  const [busy,setBusy]=useState(false)
- const [error,setError]=useState('')
+ const [callbackError]=useState(()=>{
+  const fragment=new URLSearchParams(window.location.hash.slice(1))
+  const query=new URLSearchParams(window.location.search)
+  return fragment.has('error')||fragment.has('error_code')||query.has('error')||query.has('error_code')
+ })
+ const [error,setError]=useState(()=>{
+  const fragment=new URLSearchParams(window.location.hash.slice(1))
+  const query=new URLSearchParams(window.location.search)
+  return fragment.has('error')||fragment.has('error_code')||query.has('error')||query.has('error_code')?'Este link expirou ou já foi usado. Ele não pode abrir uma nova sessão. Solicite um novo link abaixo.':''
+ })
  const [seconds,setSeconds]=useState(0)
  const inFlight=useRef(false)
  useEffect(()=>{
@@ -33,15 +42,12 @@ export function AuthGate({children}:{children:ReactNode}){
    stop=()=>data.subscription.unsubscribe()
    const {data:{session},error:failure}=await client.auth.getSession()
    if(!active)return
-   const fragment=new URLSearchParams(window.location.hash.slice(1))
-   const query=new URLSearchParams(window.location.search)
-   const callbackError=fragment.has('error')||query.has('error')
    setUserId(session?.user.id??null)
    setLoading(false)
    if(failure||callbackError){setError('Este link expirou ou já foi usado. Peça outro abaixo.');window.history.replaceState(null,'',window.location.pathname)}
   }).catch(()=>{if(active){setError('Não foi possível conectar. Atualize a página.');setLoading(false)}})
   return()=>{active=false;stop?.()}
- },[demo])
+ },[demo,callbackError])
  useEffect(()=>{
   if(demo||!userId)return
   let active=true
