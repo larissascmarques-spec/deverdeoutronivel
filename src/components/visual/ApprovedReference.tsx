@@ -1,51 +1,50 @@
-import { useState } from 'react'
-import {
-  VISUAL_REFERENCE_PATH,
-  VISUAL_REFERENCE_VERSION,
-} from '../../config/visualReference'
-import { A4PageFrame } from './A4PageFrame'
+import { useState } from "react";
+import { VISUAL_REFERENCE_PATH } from "../../config/visualReference";
+import { ImageDialog } from "../ui/ImageDialog";
 
-interface ApprovedReferenceProps {
-  defaultOpen?: boolean
-}
-
-export function ApprovedReference({ defaultOpen = false }: ApprovedReferenceProps) {
-  const [open, setOpen] = useState(false)
-
+export function ApprovedReference({
+  defaultOpen = false,
+}: {
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const content = (
+    <>
+      <button
+        type="button"
+        className="reference-image-button"
+        onClick={() => setOpen(true)}
+        aria-label="Ampliar modelo aprovado de atividade"
+      >
+        <img
+          src={VISUAL_REFERENCE_PATH}
+          alt="Modelo aprovado: atividade de Matemática com fotografias de cookies, blocos numerados e destaques azul-marinho e laranja"
+        />
+        <span>Ampliar modelo ↗</span>
+      </button>
+      <p className="hint reference-disclaimer">
+        Exemplo do estilo visual. Este modelo não é uma atividade gerada para o
+        seu pedido.
+      </p>
+    </>
+  );
   return (
     <>
-      <details className="details" open={defaultOpen}>
-        <summary>Referência visual aprovada</summary>
-        <div className="stack" style={{ marginTop: '0.7rem' }}>
-          <p className="hint">
-            Este é o modelo da folha ilustrada que a IA deverá seguir. Não é o
-            resultado de um pedido seu e o conteúdo pedagógico desta imagem não
-            está automaticamente validado. Tema e assunto das atividades reais
-            vão variar.
-          </p>
-          <p className="hint">Versão do modelo: {VISUAL_REFERENCE_VERSION}</p>
-          <A4PageFrame
-            src={VISUAL_REFERENCE_PATH}
-            alt="Modelo aprovado de folha ilustrada em formato A4"
-            emptyText="A referência visual não foi encontrada."
-          />
-          <button className="secondary" type="button" onClick={() => setOpen(true)}>
-            Ampliar visualização
-          </button>
-        </div>
-      </details>
-
-      {open ? (
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label="Folha de referência">
-          <button className="lightbox-close" type="button" onClick={() => setOpen(false)}>
-            Fechar
-          </button>
-          <img
-            src={VISUAL_REFERENCE_PATH}
-            alt="Modelo aprovado de folha ilustrada, em tamanho ampliado"
-          />
-        </div>
-      ) : null}
+      {defaultOpen ? (
+        <div className="reference-content">{content}</div>
+      ) : (
+        <details className="details">
+          <summary>Ver modelo de atividade</summary>
+          {content}
+        </details>
+      )}
+      {open && (
+        <ImageDialog
+          src={VISUAL_REFERENCE_PATH}
+          title="Modelo aprovado de atividade"
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
-  )
+  );
 }

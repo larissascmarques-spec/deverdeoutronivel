@@ -1,0 +1,80 @@
+import {useEffect,useRef,useState,type ReactNode,type FormEvent} from 'react'
+import {isDemoMode} from '../../config/env'
+import {getSupabaseClient} from '../../lib/supabaseClient'
+import {sendAccessLink} from '../../services/emailAccess'
+
+export function AuthGate({children}:{children:ReactNode}){
+ const demo=isDemoMode()
+ const [userId,setUserId]=useState<string|null>(null)
+ const [loading,setLoading]=useState(!demo)
+ const [email,setEmail]=useState('')
+ const [sentTo,setSentTo]=useState('')
+ const [busy,setBusy]=useState(false)
+ const [error,setError]=useState('')
+ const [seconds,setSeconds]=useState(0)
+ const inFlight=useRef(false)
+ useEffect(()=>{
+  if(demo)return
+  let active=true
+  let stop:undefined|(()=>void)
+  getSupabaseClient().then(async client=>{
+   if(!client)throw Error('Conexão indisponível.')
+   const {data}=client.auth.onAuthStateChange((_event,session)=>{
+    if(!active)return
+    setUserId(previous=>{
+     const next=session?.user.id??null
+     if(previous!==next){try{sessionStorage.removeItem('dever-outro-nivel:draft')}catch{/* optional cache */}}
+     return next
+    })
+    setLoading(false)
+   })
+   stop=()=>data.subscription.unsubscribe()
+   const {data:{session},error:failure}=await client.auth.getSession()
+   if(!active)return
+   const fragment=new URLSearchParams(window.location.hash.slice(1))
+   const query=new URLSearchParams(window.location.search)
+   const callbackError=fragment.has('error')||query.has('error')
+   setUserId(session?.user.id??null)
+   setLoading(false)
+   if(failure||callbackError){setError('Este link expirou ou já foi usado. Peça outro abaixo.');window.history.replaceState(null,'',window.location.pathname)}
+  }).catch(()=>{if(active){setError('Não foi possível conectar. Atualize a página.');setLoading(false)}})
+  return()=>{active=false;stop?.()}
+ },[demo])
+ useEffect(()=>{
+  if(seconds<=0)return
+  const timer=window.setTimeout(()=>setSeconds(v=>Math.max(0,v-1)),1000)
+  return()=>window.clearTimeout(timer)
+ },[seconds])
+ async function submit(event:FormEvent){
+  event.preventDefault()
+  if(inFlight.current||seconds>0)return
+  inFlight.current=true;setBusy(true);setError('')
+  try{
+   const normalized=email.trim().toLowerCase()
+   const client=await getSupabaseClient()
+   if(!client)throw Error('Conexão indisponível. Tente novamente.')
+   await sendAccessLink(client,normalized,window.location.origin)
+   setSentTo(normalized);setSeconds(60)
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível enviar agora. Tente novamente.')}
+  finally{inFlight.current=false;setBusy(false)}
+ }
+ if(demo)return children
+ if(loading)return <main className="page"><p role="status">Abrindo seu acesso…</p></main>
+ if(userId)return <div key={userId}>{children}</div>
+ return <main className="page ai-settings stack">
+  <p className="eyebrow">DEVER DE OUTRO NÍVEL</p>
+  <h1 className="page-title">{sentTo?'Seu link está a caminho':'Seu próximo dever começa aqui'}</h1>
+  <p className="lede">{sentTo?<>Enviamos o link para <strong>{sentTo}</strong>. Abra o e-mail e toque em <strong>Abrir meu app</strong>.</>:'Informe seu e-mail para receber um link e entrar. Sem criar senha.'}</p>
+  {!sentTo?<form className="stack" onSubmit={submit}>
+   <label htmlFor="account-email">Seu e-mail</label>
+   <input id="account-email" className="input" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} maxLength={254} required value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/>
+   <button className="primary" disabled={busy||seconds>0}>{busy?'Enviando…':seconds>0?`Aguarde ${seconds}s`:'Receber meu link de acesso'}</button>
+  </form>:<div className="stack">
+   <p className="hint" role="status">O link abre seu acesso diretamente. Se não encontrar a mensagem, confira o spam. Use o link mais recente.</p>
+   <button className="primary" disabled={busy||seconds>0} onClick={e=>void submit(e)}>{busy?'Reenviando…':seconds>0?`Reenviar em ${seconds}s`:'Reenviar meu link'}</button>
+   <button className="choice" disabled={busy} onClick={()=>{setSentTo('');setError('')}}>Corrigir meu e-mail</button>
+  </div>}
+  {error?<p className="alert" role="alert">{error}</p>:null}
+  <p className="hint">Suas atividades ficam na sua conta. Não compartilhe o link de acesso.</p>
+ </main>
+}
