@@ -1,6 +1,6 @@
 # Contrato de qualidade do gerador
 
-Estado: especificação de implementação. Não há modelo de IA nem geração real conectados nesta etapa.
+Estado: fluxo implementado para teste controlado com chave própria. Ver docs/TESTE_DO_APLICATIVO.md para os limites de verificação e acesso.
 
 ## Pedido
 

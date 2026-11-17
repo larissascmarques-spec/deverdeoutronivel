@@ -1,3 +1,4 @@
+export {}
 
 const origin="https://dever-outro-nivel-previa.larissa7288.chatgpt.site";
 const headers={"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization,apikey,content-type,x-client-info","Access-Control-Allow-Methods":"GET,POST,DELETE,OPTIONS","Cache-Control":"no-store","Content-Type":"application/json"};
@@ -24,9 +25,11 @@ Deno.serve(async(req:Request)=>{
  if(!["connect","test"].includes(body.action))return reply(400,{error:"Ação inválida."});
  let key=body.action==="test"?(await rpc("read")).key:body.key;
  if(typeof key!=="string"||!/^sk-[A-Za-z0-9_-]{17,509}$/.test(key))return reply(400,{error:"Cole uma chave de API válida da OpenAI."});
- const check=await fetch("https://api.openai.com/v1/models",{headers:{Authorization:"Bearer "+key},signal:AbortSignal.timeout(15000)});
+ for(const model of ['gpt-5.4-mini-2026-03-17','gpt-image-2.5-sunburst-2026-09-08']){
+ const check=await fetch("https://api.openai.com/v1/models/"+model,{headers:{Authorization:"Bearer "+key},signal:AbortSignal.timeout(15000)});
  await check.body?.cancel();
- if(!check.ok)return reply(check.status===429?429:400,{error:check.status===401?"Chave inválida ou revogada. Crie outra na OpenAI.":check.status===429?"A OpenAI limitou as tentativas. Aguarde e tente novamente.":"Não foi possível validar. Confira as permissões da chave para listar modelos."});
+ if(!check.ok)return reply(check.status===429?429:400,{error:check.status===401?"Chave inválida ou revogada. Crie outra na OpenAI.":check.status===429?"A OpenAI limitou as tentativas. Aguarde e tente novamente.":"Não foi possível validar o acesso aos modelos de texto e imagem. Confira permissões e verificação da organização na OpenAI."});
+ }
  const result=await rpc(body.action==="test"?"tested":"save",body.action==="test"?undefined:key);
  key=null;
  return reply(200,{...result,message:"Conexão testada. Nenhuma atividade foi gerada nem cobrada neste teste."});

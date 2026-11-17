@@ -1,19 +1,14 @@
-# Conexão de IA por cliente
-Cada cliente conecta sua própria chave em /minha-ia. Supabase Auth identifica o proprietário; o navegador nunca informa um user_id ao endpoint.
+# IA por cliente
+A cliente cria sua conta no aplicativo e conecta sua própria chave em Minha IA. O servidor confirma Supabase Auth e deriva o proprietário do token, sem confiar em user_id enviado pelo navegador.
 
-## Segurança
-- Edge Function don-ai-connection valida o JWT no gateway e confirma o usuário em /auth/v1/user.
-- GET retorna somente status; POST connect valida a chave em GET /v1/models antes de salvar; POST test verifica a chave salva; DELETE remove.
-- Chaves ficam no Supabase Vault; tabela de referência em schema privado. RPC don_manage_ai_connection é executável apenas por service_role. Nunca chamar essa RPC pelo frontend.
-- Troca é transacional; remoção da conexão ou conta apaga o segredo. Nenhuma chave aparece em respostas, logs, localStorage ou variáveis VITE.
-- O teste não executa inferência e não comprova saldo, compatibilidade de modelos ou permissão de geração.
-- Custos pertencem ao cliente. Não há limite financeiro rígido implementado no aplicativo.
-- CORS permite a prévia atual; atualizar a origem ao publicar em outro domínio.
+- Chaves no Supabase Vault, fora de tabelas expostas ao cliente. RPCs privilegiadas são exclusivas de service_role.
+- Teste de conexão consulta acesso aos modelos sem executar inferência. Não comprova saldo nem todos os requisitos de geração.
+- don-generate usa o conteúdo revisado e a referência aprovada real, com hash conferido. As etapas ficam em schema privado, com reserva exclusiva de processamento.
+- Um scheduler no banco retoma etapas sem depender da página aberta; sua credencial fica no Vault e é preparada pelo primeiro pedido autenticado. Sem chamadas recursivas entre funções.
+- Conteúdo e imagem têm passadas de revisão separadas e até uma correção cada. Reprovação persistente fica pendente de conferência; falha técnica exige confirmação antes de nova tentativa.
+- PNG, JSON, PDFs e gabarito só são liberados depois das verificações. Histórico e Storage são privados por cliente.
+- Não há teto financeiro rígido. Há limite de 10 novos pedidos em 24 horas e uma geração simultânea por conta. O custo da API pertence à cliente e é informado antes da geração.
 
-## Implantação e limites
-Backend implantado; geração permanece desabilitada. Nenhuma chave global da proprietária é usada pelo endpoint.
-Publicar o frontend após build e validação visual. Configurar VITE_APP_MODE=production e variáveis públicas Supabase; provisionar acessos dos clientes. A prévia demo bloqueia entrada de chaves.
-O pipeline de atividades deve buscar a chave do proprietário no servidor, sem retornar ao navegador. Ainda faltam geração, revisão independente, modelos autorizados, controle de concorrência/cotas e exportação. Não marcar atividade como aprovada pela simples conexão da API.
+Modelos fixados: gpt-5.4-mini-2026-03-17 e gpt-image-2.5-sunburst-2026-09-08. Não são usadas chaves globais da proprietária para inferência.
 
-## Verificação
-Testes SQL transacionais com usuários e chaves fictícias: gravação/leitura Vault, troca, isolamento, exclusão de conta, remoção de segredo e bloqueio de execução por anon/authenticated. Dados de teste revertidos.
+Ver docs/TESTE_DO_APLICATIVO.md para o que foi testado, os limites do catálogo inicial e os requisitos de acesso que ainda precisam de validação real. Compilação e testes fictícios não comprovam fidelidade visual da primeira geração.

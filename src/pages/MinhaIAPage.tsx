@@ -38,7 +38,7 @@ export function MinhaIAPage() {
    if(!client)throw new Error('A conexão do aplicativo ainda não está disponível.')
    const {data}=client.auth.onAuthStateChange((_event,session)=>{
     if(!active)return
-    setSigned(Boolean(session));setStatus(null);setKey('');setPassword('')
+    setSigned(Boolean(session));if(_event!=='TOKEN_REFRESHED')setStatus(null);setKey('');setPassword('')
     setLoading(false)
    })
    cleanup=()=>data.subscription.unsubscribe()
@@ -104,7 +104,7 @@ export function MinhaIAPage() {
      <label className="ai-consent"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/>Entendo que a geração terá custos na minha conta da OpenAI.</label>
      <button className="primary" disabled={busy||!consent||!key.trim()||status===null}>{busy?'Aguarde…':status?.connected?'Salvar nova chave':'Conectar minha IA'}</button>
     </form>
-    <p className="hint">A geração de atividades ainda está em preparação. Conectar sua chave agora não libera nem inicia uma geração.</p>
+    <p className="hint">Conectar a chave não inicia uma geração. Para gerar, volte em Montar atividade. Baixar arquivos já prontos não gera uma nova cobrança de IA.</p>
     <button className="choice" disabled={busy} onClick={()=>run(async()=>{const client=await getSupabaseClient();const result=await client?.auth.signOut();if(result?.error)throw new Error('Não foi possível sair. Tente novamente.');setStatus(null);setKey('')})}>Sair da minha conta</button>
    </div>}
   {error?<p className="alert" role="alert">{error}</p>:null}

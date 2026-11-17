@@ -1,14 +1,18 @@
-# Conectar sua IA
-1. No aplicativo, toque em **Minha IA** e entre com seu e-mail e senha do aplicativo.
-2. Acesse https://platform.openai.com/settings/organization/billing/overview e confira o saldo e a cobrança da API. A assinatura do ChatGPT não inclui o uso da API.
-3. Abra https://platform.openai.com/api-keys, crie uma chave secreta para o aplicativo e copie.
-4. Volte em **Minha IA**, cole no campo **Sua chave da OpenAI**, marque a confirmação de cobrança e toque em **Conectar minha IA**.
-5. Quando aparecer **Sua IA está conectada**, a configuração estará salva.
+# Seu primeiro dever
+1. Abra o link do aplicativo. Se ele pedir o acesso do ChatGPT, use o e-mail que foi convidado.
+2. Toque em **Primeiro acesso**, crie seu acesso ao aplicativo e confirme o e-mail recebido. Depois entre.
+3. Abra **Minha IA**. No link da OpenAI, confira a cobrança da API e crie uma chave em https://platform.openai.com/api-keys.
+4. Cole a chave somente no aplicativo, confirme que o uso será cobrado na sua conta OpenAI e toque em **Conectar minha IA**. Aguarde a confirmação.
+5. Em **Montar atividade**, escolha ano, matéria, um assunto sugerido, dificuldade e quantidade de folhas. Para o primeiro teste, escolha uma folha.
+6. Leia a confirmação de custos e toque em **Gerar minhas atividades**. A criação e a revisão podem levar alguns minutos.
+7. Quando estiver pronta, visualize a folha, consulte o gabarito e baixe os PDFs. Eles ficam guardados em **Minhas atividades**, com data e assunto.
 
-Não envie sua chave por WhatsApp, e-mail ou neste chat. O aplicativo a guarda criptografada no servidor e não a exibe novamente. O teste apenas valida a conexão; não gera atividade nem faz chamada paga de geração. Ele não garante saldo ou acesso a todos os modelos de imagens.
+A assinatura do ChatGPT não inclui o uso da API. A geração, a revisão e eventuais correções usam sua conta OpenAI e podem ter custo mesmo se o material não for aprovado. Baixar novamente um arquivo pronto não gera uma nova chamada de IA.
 
-Para trocar: cole a chave nova e toque em **Salvar nova chave**.
-Para remover: toque em **Desconectar**. Para invalidar definitivamente a chave, revogue-a também na página de chaves da OpenAI.
-Baixar novamente um arquivo já criado deve reutilizar o arquivo salvo, sem gerar outra atividade.
+Não envie a chave por WhatsApp ou neste chat. O aplicativo a guarda criptografada. Para trocar, use **Salvar nova chave**. Para remover, use **Desconectar**; revogue também a chave na OpenAI se não a quiser mais. Desconectar não cancela uma chamada já enviada à OpenAI.
 
-**Situação desta versão:** tela implementada no código de revisão; conexão implantada no servidor. A prévia em demonstração não recebe chaves reais. Geração, revisão e exportação de atividades ainda não estão ativadas. O acesso de clientes precisa estar provisionado; não há cadastro ou recuperação de senha nesta tela.
+Se aparecer **Precisa de conferência**, o arquivo não é liberado como pronto. Se houver falha técnica, o pedido permanece salvo e uma nova tentativa exige sua confirmação porque pode gerar nova cobrança.
+
+Neste teste, escolha os assuntos sugeridos: são os que já foram conferidos na BNCC. O catálogo completo ainda está em conferência.
+
+Em **Baixar em outros formatos**, você também encontra a imagem PNG e o conteúdo em JSON. O PDF é montado com a mesma imagem: esses downloads não geram outra ilustração.

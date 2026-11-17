@@ -31,6 +31,7 @@ const fileLabels: Record<ActivityFile["kind"], string> = {
   mother_guide: "Guia da mãe",
   calculation_sheet: "Folha de cálculo",
   answer_key: "Gabarito",
+  structured_content: "Conteúdo em JSON",
 };
 export async function authenticatedClient() {
   const client = await getSupabaseClient();
@@ -147,6 +148,7 @@ export async function readActivity(id: string): Promise<GenerationJob | null> {
       width: page.width,
       height: page.height,
       imageUrl: await signedFile(page.object_path),
+      downloadUrl: await signedFile(page.object_path, true),
     })),
   );
   job.answerKey = parseAnswerKey(key.data?.content);

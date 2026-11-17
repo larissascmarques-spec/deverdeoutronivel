@@ -55,7 +55,7 @@ export function ResultadoPage() {
       .then((result) => {
         if (cancelled) return;
         if (!result)
-          setError("Este pedido não foi encontrado neste navegador.");
+          setError("Este pedido não foi encontrado na sua conta.");
         else setJob(result);
       })
       .catch((loadError: unknown) => {
@@ -202,7 +202,7 @@ export function ResultadoPage() {
           />
           <div className="actions">
             {job.files
-              .filter((file) => file.kind !== "calculation_sheet")
+              .filter((file) => !["calculation_sheet","structured_content"].includes(file.kind))
               .map((file) => (
                 <FileButton key={file.id} file={file} />
               ))}
@@ -211,6 +211,7 @@ export function ResultadoPage() {
                   .filter((file) => file.kind === "calculation_sheet")
                   .map((file) => <FileButton key={file.id} file={file} />)
               : null}
+            {hasFiles ? <details className="details"><summary>Baixar em outros formatos</summary><div className="stack">{page?.downloadUrl ? <a className="secondary" href={page.downloadUrl} target="_blank" rel="noreferrer">Baixar imagem da folha {page.pageNumber} (PNG)</a> : null}{job.files.filter(f=>f.kind==="structured_content"&&f.url).map(f=><a key={f.id} className="secondary" href={f.url!} target="_blank" rel="noreferrer">Baixar conteúdo em JSON</a>)}<p className="hint">Estes downloads reutilizam o material pronto e não geram uma nova cobrança de IA.</p></div></details> : null}
             {!hasFiles ? (
               <p className="hint">
                 Os arquivos da criança e o guia da mãe serão separados. O guia

@@ -31,16 +31,18 @@ export function GeracaoPage() {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
+    let running = false;
     setJob(null);
     setError(null);
 
     async function load() {
-      if (!id) return;
+      if (!id || running) return;
+      running = true;
       try {
         const next = await getServices().generation.getJob(id);
         if (cancelled) return;
         if (!next) {
-          setError("Este pedido não foi encontrado neste navegador.");
+          setError("Este pedido não foi encontrado na sua conta.");
           return;
         }
         setJob(next);
@@ -56,12 +58,13 @@ export function GeracaoPage() {
           );
         }
       }
+      finally { running = false; }
     }
 
     void load();
     const timer = window.setInterval(() => {
       void load();
-    }, 700);
+    }, 3500);
 
     return () => {
       cancelled = true;
@@ -71,6 +74,7 @@ export function GeracaoPage() {
 
   async function handleRetry() {
     if (!job || retrying) return;
+    if (!window.confirm("Tentar novamente pode gerar novas cobranças na sua conta OpenAI. Continuar?")) return;
     setRetrying(true);
     try {
       const next = await getServices().generation.retry(job.id);

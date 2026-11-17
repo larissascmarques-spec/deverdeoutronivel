@@ -1,3 +1,4 @@
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_KEY } from './publicSupabase'
 export type AppMode = 'demo' | 'production'
 
 function trim(value: string | undefined): string {
@@ -6,16 +7,16 @@ function trim(value: string | undefined): string {
 
 export function getAppMode(): AppMode {
   const raw = trim(import.meta.env.VITE_APP_MODE).toLowerCase()
-  if (raw === '' || raw === 'demo') return 'demo'
+  if (raw === 'demo') return 'demo'
   return 'production'
 }
 
 export function getSupabaseUrl(): string {
-  return trim(import.meta.env.VITE_SUPABASE_URL)
+  return trim(import.meta.env.VITE_SUPABASE_URL) || PUBLIC_SUPABASE_URL
 }
 
 export function getSupabasePublishableKey(): string {
-  return trim(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
+  return trim(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY) || PUBLIC_SUPABASE_KEY
 }
 
 export function isSupabaseConfigured(): boolean {

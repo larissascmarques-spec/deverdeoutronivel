@@ -17,7 +17,7 @@ export type GenerationStep =
   | "organizing_files";
 
 export type FileKind =
-  "child_activity" | "mother_guide" | "calculation_sheet" | "answer_key";
+  "child_activity" | "mother_guide" | "calculation_sheet" | "answer_key" | "structured_content";
 
 export interface SubjectOption {
   id: SubjectId;
@@ -51,6 +51,7 @@ export interface ActivityFile {
 }
 
 export interface ActivityPage {
+  downloadUrl?: string | null;
   id: string;
   pageNumber: number;
   imageUrl: string | null;

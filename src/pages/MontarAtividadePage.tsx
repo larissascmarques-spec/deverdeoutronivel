@@ -36,6 +36,7 @@ export function MontarAtividadePage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [chargesAccepted, setChargesAccepted] = useState(false);
   const [demoOutcome, setOutcomeState] = useState<
     "completed" | "failed" | "needs_review"
   >("completed");
@@ -135,6 +136,7 @@ export function MontarAtividadePage() {
     event.preventDefault();
     if (inFlight.current) return;
 
+    if (!isDemoMode() && !chargesAccepted) { setFormError("Confirme o uso da sua conta OpenAI para gerar."); return; }
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -266,7 +268,7 @@ export function MontarAtividadePage() {
                 </p>
               ) : (
                 <p className="hint" id="assunto-ajuda">
-                  Toque numa sugestão ou escreva o assunto se ele não aparecer
+                  As sugestões são os assuntos já conferidos neste teste. Escreva outro assunto se ele não aparecer
                   na lista.
                 </p>
               )}
@@ -385,6 +387,7 @@ export function MontarAtividadePage() {
               </p>
             ) : null}
 
+            {!isDemoMode() ? <label className="ai-consent"><input type="checkbox" checked={chargesAccepted} onChange={e=>setChargesAccepted(e.target.checked)}/>Entendo que este pedido gera cobranças na minha conta OpenAI. Cada folha inclui criação, ilustração e revisão por IA, com até uma correção de texto e uma de imagem se necessário. A cobrança pode ocorrer mesmo se o material for reprovado.</label> : null}
             <button className="primary" type="submit" disabled={submitting}>
               {submitting
                 ? "Enviando pedido…"
@@ -397,7 +400,7 @@ export function MontarAtividadePage() {
             <p className="hint submit-note">
               {isDemoMode()
                 ? "Teste gratuito desta prévia. Nenhuma atividade será gerada."
-                : "Atividade da criança e guia da mãe em arquivos separados."}
+                : "PDFs separados da criança, gabarito e guia da mãe. Até 10 pedidos por dia durante o teste; esse limite não é um teto de gastos."}
             </p>
 
             {isDemoMode() ? (
