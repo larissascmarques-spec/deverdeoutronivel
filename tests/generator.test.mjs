@@ -48,5 +48,14 @@ try{
    assert.equal((await handler(new Request('https://example.test',{method:'POST',body:'{}'}))).status,401)
   }
  }finally{globalThis.fetch=savedFetch;delete globalThis.Deno;delete globalThis.EdgeRuntime}
+ const emailBundle=join(dir,'email.mjs')
+ await build({entryPoints:['src/services/emailAccess.ts'],bundle:true,platform:'node',format:'esm',outfile:emailBundle})
+ const {sendAccessLink}=await import(emailBundle)
+ let sent
+ await sendAccessLink({auth:{async signInWithOtp(request){sent=request;return {error:null}}}},'cliente@example.com','https://app.example.com')
+ assert.deepEqual(sent,{email:'cliente@example.com',options:{shouldCreateUser:true,emailRedirectTo:'https://app.example.com/'}})
+ assert.equal('password' in sent,false)
+ await assert.rejects(()=>sendAccessLink({auth:{}},'invalid','https://app.example.com'))
+ await assert.rejects(()=>sendAccessLink({auth:{async signInWithOtp(){return {error:{status:429}}}}},'cliente@example.com','https://app.example.com'),/Aguarde/)
  console.log('PASS: arithmetic, invalid inputs, answer IDs, review gates, child prompt, A4 PDF three support exports and unauthenticated endpoint rejection. No OpenAI API calls were made.')
 }finally{await rm(dir,{recursive:true,force:true})}

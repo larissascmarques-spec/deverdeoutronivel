@@ -1,6 +1,6 @@
 # Seu primeiro dever
 1. Abra o link do aplicativo. Se ele pedir o acesso do ChatGPT, use o e-mail que foi convidado.
-2. Toque em **Primeiro acesso**, crie seu acesso ao aplicativo e confirme o e-mail recebido. Depois entre.
+2. Informe seu e-mail e toque em **Receber meu link de acesso**. No e-mail recebido, toque em **Abrir meu app**. Não é necessário criar senha nem confirmar um cadastro separado.
 3. Abra **Minha IA**. No link da OpenAI, confira a cobrança da API e crie uma chave em https://platform.openai.com/api-keys.
 4. Cole a chave somente no aplicativo, confirme que o uso será cobrado na sua conta OpenAI e toque em **Conectar minha IA**. Aguarde a confirmação.
 5. Em **Montar atividade**, escolha ano, matéria, um assunto sugerido, dificuldade e quantidade de folhas. Para o primeiro teste, escolha uma folha.

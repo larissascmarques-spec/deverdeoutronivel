@@ -1,23 +1,80 @@
-import {useEffect,useState,type ReactNode,type FormEvent} from 'react'
+import {useEffect,useRef,useState,type ReactNode,type FormEvent} from 'react'
 import {isDemoMode} from '../../config/env'
 import {getSupabaseClient} from '../../lib/supabaseClient'
+import {sendAccessLink} from '../../services/emailAccess'
+
 export function AuthGate({children}:{children:ReactNode}){
- const demo=isDemoMode();const [userId,setUserId]=useState<string|null>(null),[loading,setLoading]=useState(!demo),[mode,setMode]=useState<'login'|'signup'|'reset'|'recovery'>('login');
- const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
- useEffect(()=>{if(demo)return;let active=true;let stop:undefined|(()=>void);getSupabaseClient().then(async c=>{if(!c)throw Error();const {data}=c.auth.onAuthStateChange((event,session)=>{if(!active)return;setUserId(previous=>{const next=session?.user.id??null;if(previous!==next){try{sessionStorage.removeItem('dever-outro-nivel:draft')}catch{/* optional cache */}}return next});setLoading(false);setPassword('');if(event==='PASSWORD_RECOVERY')setMode('recovery')});stop=()=>data.subscription.unsubscribe();const {data:{session}}=await c.auth.getSession();if(active){setUserId(session?.user.id??null);setLoading(false)}}).catch(()=>{if(active){setError('Não foi possível conectar. Atualize a página.');setLoading(false)}});return()=>{active=false;stop?.()}},[demo]);
- async function submit(e:FormEvent){e.preventDefault();if(busy)return;setBusy(true);setError('');setMessage('');try{const c=await getSupabaseClient();if(!c)throw Error('Conexão indisponível.');const redirect=window.location.origin+'/minha-ia';
- if(mode==='login'){const {error}=await c.auth.signInWithPassword({email:email.trim(),password});if(error)throw Error('Confira seu e-mail e senha. Se acabou de criar sua conta, confirme o e-mail primeiro.')}
- else if(mode==='signup'){const {data,error}=await c.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:redirect}});if(error)throw Error('Não foi possível criar a conta. Confira os dados ou tente entrar.');if(!data.session)setMessage('Confira sua caixa de entrada e o spam para confirmar o e-mail. Depois volte aqui e entre.');setMode('login')}
- else if(mode==='reset'){const {error}=await c.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect});if(error)throw Error('Não foi possível enviar agora. Tente novamente.');setMessage('Se houver uma conta com esse e-mail, você receberá o link para escolher outra senha.')}
- else {const {error}=await c.auth.updateUser({password});if(error)throw Error('Não foi possível salvar a senha. Abra o link de recuperação novamente.');setMode('login');setMessage('Senha atualizada.')}
- setPassword('');}catch(e){setError(e instanceof Error?e.message:'Tente novamente.')}finally{setBusy(false)}}
- if(demo)return children;
- if(loading)return <main className="page"><p role="status">Abrindo sua conta…</p></main>;
- if(userId&&mode!=='recovery')return <div key={userId}>{children}</div>;
- return <main className="page ai-settings stack"><p className="eyebrow">DEVER DE OUTRO NÍVEL</p><h1 className="page-title">{mode==='signup'?'Crie seu acesso':mode==='reset'?'Recuperar senha':mode==='recovery'?'Escolha uma nova senha':'Vamos preparar o próximo dever?'}</h1><p className="lede">Entre para guardar suas atividades e conectar sua própria IA.</p><form className="stack" onSubmit={submit}>
- {mode!=='recovery'?<><label htmlFor="account-email">Seu e-mail</label><input id="account-email" className="input" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/></>:null}
- {mode!=='reset'?<><label htmlFor="account-password">{mode==='recovery'?'Nova senha':'Senha'}</label><input id="account-password" className="input" type="password" autoComplete={mode==='login'?'current-password':'new-password'} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)}/>{mode==='signup'?<p className="hint">Use pelo menos 8 caracteres. Este acesso é para o aplicativo, separado da sua conta OpenAI.</p>:null}</>:null}
- <button className="primary" disabled={busy}>{busy?'Aguarde…':mode==='signup'?'Criar minha conta':mode==='reset'?'Enviar link':mode==='recovery'?'Salvar nova senha':'Entrar'}</button></form>
- <div className="ai-actions">{mode==='login'?<><button className="choice" disabled={busy} onClick={()=>{setMode('signup');setMessage('');setError('')}}>Primeiro acesso</button><button className="choice" disabled={busy} onClick={()=>{setMode('reset');setMessage('');setError('')}}>Esqueci minha senha</button></>:mode!=='recovery'?<button className="choice" disabled={busy} onClick={()=>setMode('login')}>Voltar para entrar</button>:null}</div>
- {error?<p className="alert" role="alert">{error}</p>:null}{message?<p role="status">{message}</p>:null}</main>
+ const demo=isDemoMode()
+ const [userId,setUserId]=useState<string|null>(null)
+ const [loading,setLoading]=useState(!demo)
+ const [email,setEmail]=useState('')
+ const [sentTo,setSentTo]=useState('')
+ const [busy,setBusy]=useState(false)
+ const [error,setError]=useState('')
+ const [seconds,setSeconds]=useState(0)
+ const inFlight=useRef(false)
+ useEffect(()=>{
+  if(demo)return
+  let active=true
+  let stop:undefined|(()=>void)
+  getSupabaseClient().then(async client=>{
+   if(!client)throw Error('Conexão indisponível.')
+   const {data}=client.auth.onAuthStateChange((_event,session)=>{
+    if(!active)return
+    setUserId(previous=>{
+     const next=session?.user.id??null
+     if(previous!==next){try{sessionStorage.removeItem('dever-outro-nivel:draft')}catch{/* optional cache */}}
+     return next
+    })
+    setLoading(false)
+   })
+   stop=()=>data.subscription.unsubscribe()
+   const {data:{session},error:failure}=await client.auth.getSession()
+   if(!active)return
+   const fragment=new URLSearchParams(window.location.hash.slice(1))
+   const query=new URLSearchParams(window.location.search)
+   const callbackError=fragment.has('error')||query.has('error')
+   setUserId(session?.user.id??null)
+   setLoading(false)
+   if(failure||callbackError){setError('Este link expirou ou já foi usado. Peça outro abaixo.');window.history.replaceState(null,'',window.location.pathname)}
+  }).catch(()=>{if(active){setError('Não foi possível conectar. Atualize a página.');setLoading(false)}})
+  return()=>{active=false;stop?.()}
+ },[demo])
+ useEffect(()=>{
+  if(seconds<=0)return
+  const timer=window.setTimeout(()=>setSeconds(v=>Math.max(0,v-1)),1000)
+  return()=>window.clearTimeout(timer)
+ },[seconds])
+ async function submit(event:FormEvent){
+  event.preventDefault()
+  if(inFlight.current||seconds>0)return
+  inFlight.current=true;setBusy(true);setError('')
+  try{
+   const normalized=email.trim().toLowerCase()
+   const client=await getSupabaseClient()
+   if(!client)throw Error('Conexão indisponível. Tente novamente.')
+   await sendAccessLink(client,normalized,window.location.origin)
+   setSentTo(normalized);setSeconds(60)
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível enviar agora. Tente novamente.')}
+  finally{inFlight.current=false;setBusy(false)}
+ }
+ if(demo)return children
+ if(loading)return <main className="page"><p role="status">Abrindo seu acesso…</p></main>
+ if(userId)return <div key={userId}>{children}</div>
+ return <main className="page ai-settings stack">
+  <p className="eyebrow">DEVER DE OUTRO NÍVEL</p>
+  <h1 className="page-title">{sentTo?'Seu link está a caminho':'Seu próximo dever começa aqui'}</h1>
+  <p className="lede">{sentTo?<>Enviamos o link para <strong>{sentTo}</strong>. Abra o e-mail e toque em <strong>Abrir meu app</strong>.</>:'Informe seu e-mail para receber um link e entrar. Sem criar senha.'}</p>
+  {!sentTo?<form className="stack" onSubmit={submit}>
+   <label htmlFor="account-email">Seu e-mail</label>
+   <input id="account-email" className="input" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} maxLength={254} required value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}/>
+   <button className="primary" disabled={busy||seconds>0}>{busy?'Enviando…':seconds>0?`Aguarde ${seconds}s`:'Receber meu link de acesso'}</button>
+  </form>:<div className="stack">
+   <p className="hint" role="status">O link abre seu acesso diretamente. Se não encontrar a mensagem, confira o spam. Use o link mais recente.</p>
+   <button className="primary" disabled={busy||seconds>0} onClick={e=>void submit(e)}>{busy?'Reenviando…':seconds>0?`Reenviar em ${seconds}s`:'Reenviar meu link'}</button>
+   <button className="choice" disabled={busy} onClick={()=>{setSentTo('');setError('')}}>Corrigir meu e-mail</button>
+  </div>}
+  {error?<p className="alert" role="alert">{error}</p>:null}
+  <p className="hint">Suas atividades ficam na sua conta. Não compartilhe o link de acesso.</p>
+ </main>
 }

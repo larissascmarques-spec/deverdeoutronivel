@@ -1,7 +1,7 @@
 # Teste do gerador
 
 ## O que foi implementado
-- Entrada por e-mail e senha, primeiro acesso e recuperação de senha.
+- Entrada por link enviado ao e-mail, sem senha ou confirmação de cadastro separada.
 - Chave OpenAI própria, criptografada no Vault, com teste dos modelos de texto e imagem, troca e remoção.
 - Pedido idempotente, uma geração simultânea por conta e até 10 novos pedidos nas últimas 24 horas. Isso não representa um teto financeiro.
 - Criação por folha, segunda passada de revisão, até uma correção de conteúdo, ilustração com o arquivo aprovado como referência real, conferência visual da imagem, até uma correção visual e PDF A4 sem distorção.
@@ -32,3 +32,7 @@ O primeiro teste real deve usar Matemática, 3º ano, Adição e subtração, um
 ## Formatos e custos
 Além dos PDFs, a cliente pode baixar a imagem PNG da folha e o JSON do conteúdo aprovado. São exportações do mesmo pedido, sem outra geração de imagem. O JSON não contém credenciais nem os metadados internos do provedor.
 Modelo de imagem configurado: gpt-image-2.5-sunburst-2026-09-08, qualidade high, 1536x2176. A calculadora oficial do guia, consultada com esses valores, estimou 2180 tokens de saída e US$ 0,06540 de saída por imagem. Isso exclui o texto e a imagem de entrada, revisão, criação de conteúdo e novas tentativas. Não apresentar esse número como custo total por atividade. O valor real só será conhecido após o primeiro pedido com chave válida e consulta do usage/faturamento da OpenAI. Fonte: https://developers.openai.com/api/docs/guides/image-generation
+
+
+## Ajuste de acesso por link
+A tela usa signInWithOtp e mantém a sessão no navegador. O template supabase/templates/acesso.html está pronto para o botão Abrir meu app. Ainda é necessário aplicá-lo nos templates Magic Link, Confirm signup e Invite do painel, configurar Site URL/Redirect URLs e um SMTP próprio para endereços de clientes. O envio padrão do Supabase é restrito à equipe do projeto. O Site permanece privado até autorização explícita para tornar pública a página de entrada; dados e atividades continuam sujeitos à autenticação e RLS do Supabase. Nenhum e-mail real foi enviado nesta alteração.

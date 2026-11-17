@@ -10,8 +10,6 @@ export function MinhaIAPage() {
  const [loading,setLoading]=useState(!demo)
  const [busy,setBusy]=useState(false)
  const [status,setStatus]=useState<Status|null>(null)
- const [email,setEmail]=useState('')
- const [password,setPassword]=useState('')
  const [key,setKey]=useState('')
  const [consent,setConsent]=useState(false)
  const [message,setMessage]=useState('')
@@ -38,7 +36,7 @@ export function MinhaIAPage() {
    if(!client)throw new Error('A conexão do aplicativo ainda não está disponível.')
    const {data}=client.auth.onAuthStateChange((_event,session)=>{
     if(!active)return
-    setSigned(Boolean(session));if(_event!=='TOKEN_REFRESHED')setStatus(null);setKey('');setPassword('')
+    setSigned(Boolean(session));if(_event!=='TOKEN_REFRESHED')setStatus(null);setKey('')
     setLoading(false)
    })
    cleanup=()=>data.subscription.unsubscribe()
@@ -58,16 +56,6 @@ export function MinhaIAPage() {
   lock.current=true;setBusy(true);setError('');setMessage('')
   try{await task()}catch(e){setError(e instanceof Error?e.message:'Tente novamente.')}
   finally{lock.current=false;setBusy(false)}
- }
- async function login(event:FormEvent){
-  event.preventDefault()
-  await run(async()=>{
-   const client=await getSupabaseClient()
-   if(!client)throw new Error('Conexão indisponível.')
-   const {error:failure}=await client.auth.signInWithPassword({email:email.trim(),password})
-   setPassword('')
-   if(failure)throw new Error('Não foi possível entrar. Confira seu e-mail e senha de acesso ao aplicativo.')
-  })
  }
  async function connect(event:FormEvent){
   event.preventDefault()
@@ -90,10 +78,7 @@ export function MinhaIAPage() {
    <p className="hint">Não envie sua chave por mensagem. O aplicativo não mostra a chave depois de salva. O teste de conexão não gera material.</p>
   </details>
   {demo?<p className="alert">Esta é uma prévia. Não cole sua chave aqui. A conexão estará disponível na versão publicada com acesso à sua conta.</p>:loading?<p role="status">Abrindo sua conta…</p>:!signed?
-   <form className="stack" onSubmit={login}><h2>Entre na sua conta</h2><p>Use o acesso que você recebeu para o aplicativo.</p>
-   <label htmlFor="ai-email">E-mail</label><input id="ai-email" className="input" type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/>
-   <label htmlFor="ai-password">Senha do aplicativo</label><input id="ai-password" className="input" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/>
-   <button className="primary" disabled={busy}>{busy?'Entrando…':'Entrar'}</button></form>:
+   <p>Sua sessão terminou. Entre pelo link enviado ao seu e-mail.</p>:
    <div className="stack">
     <p role="status"><strong>{status===null?'Consultando conexão…':status.connected?'Sua IA está conectada':'Sua IA ainda não está conectada'}</strong>{status?.tested_at?<><br/>Último teste: {new Date(status.tested_at).toLocaleString('pt-BR')}</>:null}</p>
     {status?.connected?<div className="ai-actions"><button className="choice" disabled={busy} onClick={()=>run(async()=>{const data=await call('POST',{action:'test'});setStatus(data);setMessage(data.message||'Conexão testada.')})}>Testar conexão</button><button className="choice" disabled={busy} onClick={()=>{if(window.confirm('Desconectar sua IA? Você poderá conectar outra chave depois.'))void run(async()=>{setStatus(await call('DELETE'));setMessage('IA desconectada. Revogue também a chave na OpenAI se não for usá-la mais.')})}}>Desconectar</button></div>:null}
