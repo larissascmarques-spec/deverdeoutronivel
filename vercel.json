@@ -1,0 +1,11 @@
+{
+  "framework": "vite",
+  "buildCommand": "VITE_APP_MODE=production npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|references/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

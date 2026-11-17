@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:generator": "node tests/generator.test.mjs",
+    "check:edge": "tsc -p tests/edge-tsconfig.json"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.80.0",
+    "@supabase/supabase-js": "2.119.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.4"
@@ -19,6 +21,7 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "pdf-lib": "1.17.1"
   }
 }

@@ -121,3 +121,8 @@ A prévia futura deve preencher `GenerationJob.pages` com imagens A4 geradas. N�
 10. Limites de uso, tentativas, reuso e política de revisão humana quando `needs_review`.
 
 A compra futura libera o 1º ao 5º ano juntos, sem vender por ano.
+
+
+## Histórico permanente da cliente — requisito confirmado
+
+Cada pedido enviado deve ser salvo na conta da cliente, com ID estável, data e hora, tema/assunto, ano escolar, matéria, dificuldade, quantidade de folhas, situação e arquivos. A busca por assunto e os cartões de Minhas atividades devem permitir reabrir o material e baixar o mesmo PDF sem nova geração ou consumo de IA. Listagem por data do pedido, do mais recente ao mais antigo. Implementar isolamento por cliente autenticada com RLS; downloads autorizados apenas da própria conta. Na demonstração atual há apenas armazenamento neste navegador: isso não equivale a persistência na conta. Não registrar cada tecla digitada na pesquisa como uma atividade.
